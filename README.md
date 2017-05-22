@@ -5,7 +5,8 @@ it's a store of keys that creates familiar ordered collections in a
 more expressive and less error prone way.
 
 # Usage
-## Make ordered collections with Enum members as keys/fields
+## Order and sanity via `Enum`
+A simple `Enum` defines the field names and order of your collections-to-be:
 ```python
 from enumap import Enumap
 
@@ -14,28 +15,18 @@ from enumap import Enumap
 ...    cherry = "sweet"
 ...    mud = "savory"
 ...
+```
+
+With your `Pie` data fully specified, create some collections:
+```
 >>> Pie.map(10, 23, mud=1)  # args and/or kwargs
 OrderedDict([('rhubarb', 10), ('cherry', 23), ('mud', 1)])
 >>> Pie.tuple(10, 23, 1000, cherry=1)  # override with kwargs
 Pie_tuple(rhubarb=10, cherry=1, mud=1000)
 ```
 
-## Use `Enumap` with type annotations for deserialization
-```python
->>> import arrow  # convenient datetime library
->>> from enum import auto
->>> class Order(Enumap):
-...    index: int = "Order ID"
-...    cost: Decimal = "Total pretax cost"
-...    due_on: arrow.get = "Delivery date"
-...
->>> serialized = "134,25014.99,2017-06-20"  # line from a CSV, for example
->>> Order.tuple_casted(*serialized.split(","))
-Order_tuple(index=134, cost=Decimal('25014.99'), due_on=<Arrow [2017-06-20T00:00:00+00:00]>)
+Helpful errors keep your data orderly and sane:
 ```
-
-## `Enumap` keys are strictly required
-```python
 >>> Pie.tuple(rhubarb=1, cherry=1, mud=3, blueberry=30)
 ...
 KeyError: "Pie requires keys ('rhubarb', 'cherry', 'mud'); invalid: {'blueberry'}, missing: {}"
@@ -44,18 +35,32 @@ KeyError: "Pie requires keys ('rhubarb', 'cherry', 'mud'); invalid: {'blueberry'
 KeyError: "Pie requires keys ('rhubarb', 'cherry', 'mud'); invalid: {}, missing: {'mud'}"
 ```
 
-## Set `Enumap` types without annotations
-Handy if you prefer the functional style of `Enum` construction.
+## Use `Enumap` with type annotations for deserialization
+If you annotate your data fields with callable types, `Enumap.tuple_casted`
+and `Enumap.map_casted` will create deserialized collections from your data:
 ```python
->>> Part = Enumap("Part", "resistor capacitor inductor")
->>> Part.set_types(int, capacitor=float, inductor=float)
->>> some_raw_data = "10 90e-9 3.4e-30"
->>> Part.map_casted(*some_raw_data.split())
-OrderedDict([('resistor', 10), ('capacitor', 90e-9), ('inductor', 0.0034)])
+>>> import arrow  # convenient datetime library
+>>> from enum import auto
+>>> class CustomerOrder(Enumap):
+...    index: int = "Order ID"
+...    cost: Decimal = "Total pretax cost"
+...    due_on: arrow.get = "Delivery date"
+...
+>>> serialized = "134,25014.99,2017-06-20"  # line from a CSV, for example
+>>> CustomerOrder.tuple_casted(*serialized.split(","))
+CustomerOrder_tuple(index=134, cost=Decimal('25014.99'), due_on=<Arrow [2017-06-20T00:00:00+00:00]>)
 ```
 
-## Sparse mappings with the less strict `SparseEnumap`
-`None` is provided for missing keys.
+If you hate type annotations or if you prefer the functional
+`Enum` constructor, use `Enumap.set_types`:
+```
+>>> CustomerOrder.set_types(int, cost=Decimal, due_on=arrow.get)
+>>> CustomerOrder.map_casted("22", "99.99", "2017-06-20")
+OrderedDict([('index', 134), ('costl', Decimal('25014.99')), ...])
+```
+
+## Sparse collections with the less strict `SparseEnumap`
+Create collections with `None` defaults:
 ```python
 >>> from enumap import SparseEnumap
 >>> SparsePie = SparseEnumap("SparsePie", "rhubarb cherry mud")
