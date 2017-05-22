@@ -7,8 +7,7 @@ more expressive and less error prone way.
 ## Order and sanity via `Enum`
 A simple `Enum` defines the field names and order of your collections-to-be:
 ```python
-from enumap import Enumap
-
+>>> from enumap import Enumap
 >>> class Pie(Enumap):
 ...    rhubarb = "tart"
 ...    cherry = "sweet"
