@@ -4,7 +4,6 @@
 it's a store of keys that creates familiar ordered collections in a
 more expressive and less error prone way.
 
-# Usage
 ## Order and sanity via `Enum`
 A simple `Enum` defines the field names and order of your collections-to-be:
 ```python
@@ -17,7 +16,7 @@ from enumap import Enumap
 ...
 ```
 
-With your `Pie` data fully specified, create some collections:
+Create some collections with your `Pie` data specification:
 ```python
 >>> Pie.map(10, 23, mud=1)  # args and/or kwargs
 OrderedDict([('rhubarb', 10), ('cherry', 23), ('mud', 1)])
@@ -29,10 +28,10 @@ Helpful errors keep your data orderly and sane:
 ```python
 >>> Pie.tuple(rhubarb=1, cherry=1, mud=3, blueberry=30)
 ...
-KeyError: "Pie requires keys ('rhubarb', 'cherry', 'mud'); invalid: {'blueberry'}, missing: {}"
+KeyError: "Pie requires keys ('rhubarb', 'cherry', 'mud'); got invalid keys {'blueberry'}"
 >>> Pie.map(1, 1)
 ...
-KeyError: "Pie requires keys ('rhubarb', 'cherry', 'mud'); invalid: {}, missing: {'mud'}"
+KeyError: "Pie requires keys ('rhubarb', 'cherry', 'mud'); missing keys {'mud'}"
 ```
 
 ## Use `Enumap` with type annotations for deserialization
@@ -74,7 +73,7 @@ Still, invalid keys are not allowed:
 ```python
 >>> SparsePie.tuple(cherry=1, rhubarb=1, mud=3, blueberry=30)
 ...
-KeyError: "SparsePie has keys ('rhubarb', 'cherry', 'mud'), got invalid keys {'blueberry'}"
+KeyError: "SparsePie has keys ('rhubarb', 'cherry', 'mud'); got invalid keys {'blueberry'}"
 ```
 
 # Why?
