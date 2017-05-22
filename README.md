@@ -26,7 +26,7 @@ Pie_tuple(rhubarb=10, cherry=1, mud=1000)
 ```
 
 Helpful errors keep your data orderly and sane:
-```
+```python
 >>> Pie.tuple(rhubarb=1, cherry=1, mud=3, blueberry=30)
 ...
 KeyError: "Pie requires keys ('rhubarb', 'cherry', 'mud'); invalid: {'blueberry'}, missing: {}"
@@ -53,7 +53,7 @@ CustomerOrder_tuple(index=134, cost=Decimal('25014.99'), due_on=<Arrow [2017-06-
 
 If you hate type annotations or if you prefer the functional
 `Enum` constructor, use `Enumap.set_types`:
-```
+```python
 >>> CustomerOrder.set_types(int, cost=Decimal, due_on=arrow.get)
 >>> CustomerOrder.map_casted("22", "99.99", "2017-06-20")
 OrderedDict([('index', 134), ('costl', Decimal('25014.99')), ...])
