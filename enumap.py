@@ -3,6 +3,9 @@ from enum import Enum
 from itertools import zip_longest
 
 
+__version__ = "1.0.0"
+
+
 class Enumap(Enum):
     """An Enum with convenience methods for mapping
     ordered values to dictionaries and namedtuples whose
