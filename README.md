@@ -18,7 +18,7 @@ from enumap import Enumap
 ```
 
 With your `Pie` data fully specified, create some collections:
-```
+```python
 >>> Pie.map(10, 23, mud=1)  # args and/or kwargs
 OrderedDict([('rhubarb', 10), ('cherry', 23), ('mud', 1)])
 >>> Pie.tuple(10, 23, 1000, cherry=1)  # override with kwargs
