@@ -224,14 +224,14 @@ object that holds the keys/field names.
 
 ```python
 Part = Enumap("Part", "assembly reference subassembly name")
-part = Part.map("A1", "R3", subassembly=[], name="resistor")
-part_tuple = Part.tuple("A1", "R3", [], name="resistor")
+part_map = Part.map("A1", "R3", subassembly=[], name="resistor")
+part = Part.tuple("A1", "R3", [], name="resistor")
 ```
 
 If you use `Part` every time you want a new collection, you'll never let an
 invalid key pass silently through your code:
 
 ```python
-new_part = Part.map(**part, assembly="A2")  # override assembly
-new_part = Part.tuple(**part, assembly="A2")
+new_part_map = Part.map(*part_map.values(), assembly="A2")  # override assembly
+new_part = Part.tuple(*part, assembly="A2")
 ```
