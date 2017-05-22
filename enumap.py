@@ -99,14 +99,19 @@ class Enumap(Enum):
         missing and invalid keys."""
         mapping = {**dict(zip(cls.names(), values)), **named_values}
         try:
-            for name in cls.names():
-                yield name, mapping[name]
+            for idx, name in enumerate(cls.names()):
+                yield name, mapping.pop(name)
         except KeyError as k:
             names = tuple(cls.names())
-            invalid = set(mapping) - set(names)
-            missing = set(names) - set(mapping)
+            missing = set(names[idx:])
             raise KeyError(f"{cls.__name__} requires keys {names}; "
-                           f"invalid: {invalid}, missing: {missing}")
+                           f"missing keys {missing}")
+        if mapping:
+            names = cls.names()
+            invalid = set(mapping)
+            raise KeyError(f"{cls.__name__} requires keys {names}; "
+                           f"got invalid keys {invalid}")
+
 
     @classmethod
     def _make_casted_mapping(cls, *values, **named_values):
