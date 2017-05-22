@@ -81,7 +81,7 @@ class Enumap(Enum):
         >>> Pastry.types()  # donut kwarg overrides donut arg
         {'croissant': int, 'donut': float, 'muffin': int}
         """
-        mapping = cls._make_checked_mapping(*types, **named_types)
+        mapping = dict(cls._make_checked_mapping(*types, **named_types))
         setattr(cls, "__member_types", mapping)
 
     @classmethod

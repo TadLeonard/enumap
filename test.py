@@ -1,7 +1,7 @@
 """Unit tests. Run with `py.test test.py -v`."""
 
 from collections import OrderedDict
-from enumap import MappableEnum as ME
+from enumap import Enumap as ME
 from decimal import Decimal
 
 
