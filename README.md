@@ -1,4 +1,7 @@
 # Enumap: ordered collections that are hard to screw up
+
+[![PyPI version](https://badge.fury.io/py/enumap.svg)](https://badge.fury.io/py/enumap)
+
 `Enumap` is an `Enum` that helps you manage named, ordered values in a strict but convenient way.
 `Enumap` isn't yet another collection, 
 it's a store of keys that creates familiar ordered collections in a
@@ -232,3 +235,6 @@ invalid key pass silently through your code:
 new_part_map = Part.map(*part_map.values(), assembly="A2")  # override assembly
 new_part = Part.tuple(*part, assembly="A2")
 ```
+
+# Installation
+Install with `pip install enumap`. Requires Python version 3.6 and later.
