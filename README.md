@@ -53,7 +53,7 @@ If you hate type annotations or if you prefer the functional
 ```python
 >>> CustomerOrder.set_types(int, cost=Decimal, due_on=arrow.get)
 >>> CustomerOrder.map_casted("22", "99.99", "2017-06-20")
-OrderedDict([('index', 134), ('costl', Decimal('25014.99')), ...])
+OrderedDict([('index', 134), ('cost', Decimal('25014.99')), ...])
 ```
 
 ## Sparse collections with the less strict `SparseEnumap`
