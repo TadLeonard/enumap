@@ -4,7 +4,7 @@
 it's a store of keys that creates familiar ordered collections in a
 more expressive and less error prone way.
 
-## Order and sanity via `Enum`
+## Order and sanity with `Enum`
 A simple `Enum` defines the field names and order of your collections-to-be:
 ```python
 >>> from enumap import Enumap
