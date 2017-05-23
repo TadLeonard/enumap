@@ -16,7 +16,8 @@ more expressive and less error prone way.
 ...    mud = "savory"
 ```
 
-#### Easily create `OrderedDicts` and `namedtuples` from your data specification
+#### Easily create `OrderedDicts` and `namedtuples` from your data spec
+`Enumap.map` and `Enumap.tuple` make collections with the same fields you used in your `Enum` spec.
 ```python
 >>> Pie.map(10, 23, mud=1)  # args and/or kwargs
 OrderedDict([('rhubarb', 10), ('cherry', 23), ('mud', 1)])
@@ -24,7 +25,7 @@ OrderedDict([('rhubarb', 10), ('cherry', 23), ('mud', 1)])
 Pie_tuple(rhubarb=10, cherry=1, mud=1000)
 ```
 
-#### Helpful errors happen at the time your collections are *created*, not later on when they're used
+#### Discover errors when your collections are *created*, not later on when they're used
 ```python
 >>> Pie.tuple(rhubarb=1, cherry=1, mud=3, blueberry=30)
 ...
@@ -37,21 +38,20 @@ KeyError: "Pie requires keys ('rhubarb', 'cherry', 'mud'); missing keys {'mud'}"
 With the `Enumap` specification of your data guiding you, you'll never let errors like
 this one seep deeper into your code:
 ```python
-data = {"rhubarb": 10, "cherry": 23, "mud": 1}
-
-# elsewhere
-new_data = dict(data, chery=0)  # 'cherry' is mispelled, but your dictionary doesn't care
-
-# even deeper into your code
-if not new_data["cherry"]:
-   ... # this block won't execute thanks to our spelling error earlier on!
+>>> data = {"rhubarb": 10, "cherry": 23, "mud": 1}
+>>> # elsewhere in your code
+... new_data = dict(data, chery=0)  # 'cherry' is mispelled, but your dictionary doesn't care
+>>> # even deeper into your code
+... if not new_data["cherry"]:
+...     # this block won't execute thanks to our spelling error earlier on!
 ```
 
-#### Compose and modify your data safely with the one true source of its order and keys
+#### Compose and modify your data safely with the *one true source* of its naming and order
 ```python
-data = Pie.tuple(10, 23, 1)
-new_data = Pie(*data, rhubarb=data.rhubarb * 2)  # customer wants more rhubarb
-bad_data = Pie(*data, chery=0)  # KeyError! You'll know right away that you've mispelled 'cherry'!
+>>> data = Pie.tuple(10, 23, 1)
+>>> new_data = Pie(*data, rhubarb=data.rhubarb * 2)  # customer wants more rhubarb
+>>> bad_data = Pie(*data, chery=0)  # you'll know right away that you've mispelled 'cherry'
+KeyError: "Pie requires keys ('rhubarb', 'cherry', 'mud'); missing keys {'chery'}"
 ```
 
 ## Simple deserialization with type annotations
