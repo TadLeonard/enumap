@@ -6,8 +6,8 @@
 it's a store of keys that creates familiar ordered collections in a
 more expressive and less error prone way.
 
-## Making orderly ordered collections with `Enum`
-#### Specify the order and naming of your data with a simple `Enum`
+## Make a specification for your data
+Make a spec for your data with a simple, declarative `Enum`:
 ```python
 >>> from enumap import Enumap
 >>> class Pie(Enumap):
@@ -16,8 +16,14 @@ more expressive and less error prone way.
 ...    mud = "savory"
 ```
 
-#### Easily create `OrderedDicts` and `namedtuples` from your data spec
-`Enumap.map` and `Enumap.tuple` make collections with the same fields you used in your `Enum` spec.
+Or use the equivalent functional style:
+```python
+>>> Pie = Enumap("Pie", "tart sweet savory")
+```
+
+## Easily create ordered collections from your data spec
+With `Enumap`, making `OrderedDicts` and `namedtuples` from your data is easy.
+`Enumap.map` and `Enumap.tuple` make collections with the same fields you used in your specification.
 ```python
 >>> Pie.map(10, 23, mud=1)  # args and/or kwargs
 OrderedDict([('rhubarb', 10), ('cherry', 23), ('mud', 1)])
@@ -25,7 +31,8 @@ OrderedDict([('rhubarb', 10), ('cherry', 23), ('mud', 1)])
 Pie_tuple(rhubarb=10, cherry=1, mud=1000)
 ```
 
-#### Discover errors when your collections are *created*, not later on when they're used
+## Discover errors when your collections are *created*, not when they're used later on
+`KeyErrors` keep you from going astray:
 ```python
 >>> Pie.tuple(rhubarb=1, cherry=1, mud=3, blueberry=30)
 ...
@@ -35,8 +42,7 @@ KeyError: "Pie requires keys ('rhubarb', 'cherry', 'mud'); got invalid keys {'bl
 KeyError: "Pie requires keys ('rhubarb', 'cherry', 'mud'); missing keys {'mud'}"
 ```
 
-With the `Enumap` specification of your data guiding you, you'll never let errors like
-this one seep deeper into your code:
+With the `Enumap` data spec guiding you, you'll never let spelling errors seep deeper into your code:
 ```python
 >>> data = {"rhubarb": 10, "cherry": 23, "mud": 1}
 >>> # elsewhere in your code
@@ -46,12 +52,12 @@ this one seep deeper into your code:
 ...     # this block won't execute thanks to our spelling error earlier on!
 ```
 
-#### Compose and modify your data safely with the *one true source* of its naming and order
+## Compose data safely with a single source for its order and naming
 ```python
 >>> data = Pie.tuple(10, 23, 1)
 >>> new_data = Pie(*data, rhubarb=data.rhubarb * 2)  # customer wants more rhubarb
 >>> bad_data = Pie(*data, chery=0)  # you'll know right away that you've mispelled 'cherry'
-KeyError: "Pie requires keys ('rhubarb', 'cherry', 'mud'); missing keys {'chery'}"
+KeyError: "Pie requires keys ('rhubarb', 'cherry', 'mud'); got invalid keys {'chery'}"
 ```
 
 ## Simple deserialization with type annotations
