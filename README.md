@@ -22,8 +22,8 @@ Or use the equivalent functional style:
 ```
 
 ## Easily create ordered collections from your data spec
-With `Enumap`, making `OrderedDicts` and `namedtuples` from your data is easy.
-`Enumap.map` and `Enumap.tuple` make collections with the same fields you used in your specification.
+`Enumap.map` and `Enumap.tuple` make familiar, reliable `OrderedDicts` and `namedtuples`
+with the same fields and ordering you used in your data spec.
 ```python
 >>> Pie.map(10, 23, mud=1)  # args and/or kwargs
 OrderedDict([('rhubarb', 10), ('cherry', 23), ('mud', 1)])
@@ -31,7 +31,7 @@ OrderedDict([('rhubarb', 10), ('cherry', 23), ('mud', 1)])
 Pie_tuple(rhubarb=10, cherry=1, mud=1000)
 ```
 
-## Discover errors when your collections are *created*, not when they're used later on
+## Discover errors when your collections are *created*, not when they're used
 `KeyErrors` keep you from going astray:
 ```python
 >>> Pie.tuple(rhubarb=1, cherry=1, mud=3, blueberry=30)
