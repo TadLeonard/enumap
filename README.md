@@ -18,7 +18,7 @@ Make a spec for your data with a simple, declarative `Enum`:
 
 Or use the equivalent functional style:
 ```python
->>> Pie = Enumap("Pie", "tart sweet savory")
+>>> Pie = Enumap("Pie", "rhubarb cherry mud")
 ```
 
 ## Easily create ordered collections from your data spec
