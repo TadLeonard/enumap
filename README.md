@@ -53,6 +53,7 @@ With the `Enumap` data spec guiding you, you'll never let spelling errors seep d
 ```
 
 ## Compose data safely with a single source for its order and naming
+The `Enumap` spec acts like a tiny API for manipulating your data:
 ```python
 >>> data = Pie.tuple(10, 23, 1)
 >>> new_data = Pie(*data, rhubarb=data.rhubarb * 2)  # customer wants more rhubarb
