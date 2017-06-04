@@ -1,41 +1,67 @@
-# Enumap: ordered collections that are hard to screw up
+# Enumap: ordered data kept orderly
+
+
 `Enumap` is an `Enum` that helps you manage named, ordered values in a strict but convenient way.
 `Enumap` isn't yet another collection, 
 it's a store of keys that creates familiar ordered collections in a
 more expressive and less error prone way.
 
-# Usage
-## Order and sanity via `Enum`
-A simple `Enum` defines the field names and order of your collections-to-be:
+## Make a specification for your data
+Make a spec for your data with a simple, declarative `Enum`:
 ```python
-from enumap import Enumap
-
->>> class Pie(str, Enumap):
+>>> from enumap import Enumap
+>>> class Pie(Enumap):
 ...    rhubarb = "tart"
 ...    cherry = "sweet"
 ...    mud = "savory"
-...
 ```
 
-With your `Pie` data fully specified, create some collections:
+Or use the equivalent functional style:
+```python
+>>> Pie = Enumap("Pie", "rhubarb cherry mud")
 ```
+
+## Easily create ordered collections from your data spec
+`Enumap.map` and `Enumap.tuple` make familiar, reliable `OrderedDicts` and `namedtuples`
+with the same fields and ordering you used in your data spec.
+```python
 >>> Pie.map(10, 23, mud=1)  # args and/or kwargs
 OrderedDict([('rhubarb', 10), ('cherry', 23), ('mud', 1)])
 >>> Pie.tuple(10, 23, 1000, cherry=1)  # override with kwargs
 Pie_tuple(rhubarb=10, cherry=1, mud=1000)
 ```
 
-Helpful errors keep your data orderly and sane:
-```
+## Discover errors when your collections are *created*, not when they're used
+`KeyErrors` keep you from going astray:
+```python
 >>> Pie.tuple(rhubarb=1, cherry=1, mud=3, blueberry=30)
 ...
-KeyError: "Pie requires keys ('rhubarb', 'cherry', 'mud'); invalid: {'blueberry'}, missing: {}"
+KeyError: "Pie requires keys ('rhubarb', 'cherry', 'mud'); got invalid keys {'blueberry'}"
 >>> Pie.map(1, 1)
 ...
-KeyError: "Pie requires keys ('rhubarb', 'cherry', 'mud'); invalid: {}, missing: {'mud'}"
+KeyError: "Pie requires keys ('rhubarb', 'cherry', 'mud'); missing keys {'mud'}"
 ```
 
-## Use `Enumap` with type annotations for deserialization
+With the `Enumap` data spec guiding you, you'll never let spelling errors seep deeper into your code:
+```python
+>>> data = {"rhubarb": 10, "cherry": 23, "mud": 1}
+>>> # elsewhere in your code
+... new_data = dict(data, chery=0)  # 'cherry' is mispelled, but your dictionary doesn't care
+>>> # even deeper into your code
+... if not new_data["cherry"]:
+...     # this block won't execute thanks to our spelling error earlier on!
+```
+
+## Compose data safely with a single source for its order and naming
+The `Enumap` spec acts like a tiny API for manipulating your data:
+```python
+>>> data = Pie.tuple(10, 23, 1)
+>>> new_data = Pie(*data, rhubarb=data.rhubarb * 2)  # customer wants more rhubarb
+>>> bad_data = Pie(*data, chery=0)  # you'll know right away that you've mispelled 'cherry'
+KeyError: "Pie requires keys ('rhubarb', 'cherry', 'mud'); got invalid keys {'chery'}"
+```
+
+## Simple deserialization with type annotations
 If you annotate your data fields with callable types, `Enumap.tuple_casted`
 and `Enumap.map_casted` will create deserialized collections from your data:
 ```python
@@ -53,10 +79,10 @@ CustomerOrder_tuple(index=134, cost=Decimal('25014.99'), due_on=<Arrow [2017-06-
 
 If you hate type annotations or if you prefer the functional
 `Enum` constructor, use `Enumap.set_types`:
-```
+```python
 >>> CustomerOrder.set_types(int, cost=Decimal, due_on=arrow.get)
 >>> CustomerOrder.map_casted("22", "99.99", "2017-06-20")
-OrderedDict([('index', 134), ('costl', Decimal('25014.99')), ...])
+OrderedDict([('index', 134), ('cost', Decimal('25014.99')), ...])
 ```
 
 ## Sparse collections with the less strict `SparseEnumap`
@@ -74,7 +100,7 @@ Still, invalid keys are not allowed:
 ```python
 >>> SparsePie.tuple(cherry=1, rhubarb=1, mud=3, blueberry=30)
 ...
-KeyError: "SparsePie has keys ('rhubarb', 'cherry', 'mud'), got invalid keys {'blueberry'}"
+KeyError: "SparsePie has keys ('rhubarb', 'cherry', 'mud'); got invalid keys {'blueberry'}"
 ```
 
 # Why?
@@ -168,7 +194,7 @@ So now we're left using a private `namedtuple` method just to
 get a dictionary out of our data! Say we're not done yet and we want
 to update a field in our dictionary before sending it out as JSON:
 ```python
-data_as_dict.update(asembly="A2")  # misspelled "assembly" again!
+data_as_dict.update(asembly="A2")  # misspelled "assembly" error will go completely unnoticed!
 ```
 
 Often we'll want to access our field names programmatically. Sadly, this also
@@ -182,7 +208,7 @@ csvwriter.write_header(Part._fields)
 
 
 ## How about regular ol' `Enum` members as keys?
-`Enum` makes your code more debugable. When you use `Enum` members as keys
+`Enum` makes your code more debuggable. When you use `Enum` members as keys
 and parameters in your project, you never again have to wonder where literal
 strings like 'asembly' came from in a `KeyError` traceback. They're created
 in a clean, declarative fashion and they're immutable.
@@ -220,18 +246,24 @@ jsonifyable_part = {key.name: value for key, value in part.items()}
 With `Enumap`, you get an immutable collection of keys from which you can
 create `dict`s and `namedtuple`s. This approach gives you the best of both
 worlds: expressive, familiar data structures constructed by the same
-object that holds the keys/field names.
+object that holds the keys, so incorrect keys will be discovered at the time
+your collections are *made*, not when they're used later on.
 
 ```python
 Part = Enumap("Part", "assembly reference subassembly name")
-part = Part.map("A1", "R3", subassembly=[], name="resistor")
-part_tuple = Part.tuple("A1", "R3", [], name="resistor")
+part_map = Part.map("A1", "R3", subassembly=[], name="resistor")
+part = Part.tuple("A1", "R3", [], name="resistor")
 ```
 
 If you use `Part` every time you want a new collection, you'll never let an
 invalid key pass silently through your code:
 
 ```python
-new_part = Part.map(**part, assembly="A2")  # override assembly
-new_part = Part.tuple(**part, assembly="A2")
+new_part_map = Part.map(*part_map.values(), assembly="A2")  # override assembly
+new_part = Part.tuple(*part, assembly="A2")
 ```
+
+# Installation
+[![PyPI version](https://badge.fury.io/py/enumap.svg)](https://badge.fury.io/py/enumap)
+
+Install with `pip install enumap`. Requires Python 3.6+.
