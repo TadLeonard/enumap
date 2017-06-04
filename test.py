@@ -115,3 +115,10 @@ def test_sparse_bad_key():
     with pytest.raises(KeyError) as ke:
         assert a.tuple(*"1 3".split(), f="nope")
     assert "invalid keys {'f'}" in str(ke)
+
+
+def test_copy_from_names():
+    """Check that Enumap.names() can be used to construct another Enumap"""
+    a = EM("a", "b c d")
+    b = EM("b", a.names())
+    assert a.map(*range(3)) == b.map(*range(3))
