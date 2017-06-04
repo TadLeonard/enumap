@@ -13,7 +13,11 @@ class Enumap(Enum):
 
     @classmethod
     def names(cls):
-        return cls.__members__.keys()
+        names = getattr(cls, "__names", None)
+        if not names:
+            names = tuple(cls.__members__)
+            setattr(cls, "__names", names)
+        return names
 
     @classmethod
     def map(cls, *values, **named_values):
@@ -52,8 +56,12 @@ class Enumap(Enum):
         >>> Tool.tuple("small", "heavy", forehead="unwieldy")
         Tool_tuple(hammer='small', mallet='heavy', forehead='unwieldy')
         """
-        mapping = cls._make_checked_mapping(*values, **named_values)
-        return cls.tuple_class()(**dict(mapping))
+        tuple_class = cls.tuple_class()
+        try:
+            return tuple_class(*values, **named_values)
+        except TypeError:
+            mapping = cls._make_checked_mapping(*values, **named_values)
+            return tuple_class(**mapping)
 
     @classmethod
     def tuple_casted(cls, *values, **named_values):
@@ -81,7 +89,7 @@ class Enumap(Enum):
         >>> Pastry.types()  # donut kwarg overrides donut arg
         {'croissant': int, 'donut': float, 'muffin': int}
         """
-        mapping = dict(cls._make_checked_mapping(*types, **named_types))
+        mapping = cls._make_checked_mapping(*types, **named_types)
         setattr(cls, "__member_types", mapping)
 
     @classmethod
@@ -97,21 +105,15 @@ class Enumap(Enum):
         """Generate key-value pairs where keys are strictly the names
         of the members of this Enum. Raises `KeyError` for both
         missing and invalid keys."""
-        mapping = {**dict(zip(cls.names(), values)), **named_values}
-        try:
-            for idx, name in enumerate(cls.names()):
-                yield name, mapping.pop(name)
-        except KeyError as k:
-            names = tuple(cls.names())
-            missing = set(names[idx:])
+        names = cls.names()
+        mapping = {**dict(zip(names, values)), **named_values}
+        if set(mapping) == set(names):
+            return mapping
+        else:
+            missing = set(names) - set(mapping)
+            invalid = set(mapping) - set(names)
             raise KeyError(f"{cls.__name__} requires keys {names}; "
-                           f"missing keys {missing}")
-        if mapping:
-            names = cls.names()
-            invalid = set(mapping)
-            raise KeyError(f"{cls.__name__} requires keys {names}; "
-                           f"got invalid keys {invalid}")
-
+                           f"missing keys {missing}; invalid keys {invalid}")
 
     @classmethod
     def _make_casted_mapping(cls, *values, **named_values):
@@ -119,7 +121,7 @@ class Enumap(Enum):
         on the `types()` mapping"""
         mapping = cls._make_checked_mapping(*values, **named_values)
         types = cls.types()
-        for name, value in mapping:
+        for name, value in mapping.items():
             yield name, types[name](value)
 
 
@@ -132,11 +134,11 @@ class SparseEnumap(Enumap):
         """Generate key-value pairs where keys are strictly the names
         of the members of this Enum. Raises `KeyError` for both
         missing and invalid keys."""
-        mapping = {**dict(zip_longest(cls.names(), values)), **named_values}
-        for name in cls.names():
-            yield name, mapping.pop(name)
-        if mapping:
-            names = tuple(cls.names())
+        names = cls.names()
+        mapping = {**dict(zip_longest(names, values)), **named_values}
+        if set(mapping) == set(names):
+            return mapping
+        else:
             invalid = set(mapping) - set(names)
-            raise KeyError(f"{cls.__name__} has keys {names}, "
-                           f"got invalid keys {invalid}")
+            raise KeyError(f"{cls.__name__} requires keys {names}; "
+                           f"invalid keys {invalid}")
