@@ -26,7 +26,7 @@ class Enumap(Enum):
 
         >>> Fruit = Enumap("Fruit", names="apple orange papaya")
         >>> Fruit.map("heart-shaped", "spherical", papaya="ellipsoid")
-        OrderedDict(('apple', 'heart-shaped'), ('orange', ...), ...)
+        OrderedDict([('apple', 'heart-shaped'), ('orange', ...), ...])
         """
         try:
             return cls.tuple_class()(*values, **named_values)._asdict()
@@ -49,7 +49,6 @@ class Enumap(Enum):
         """
         mapping = cls._make_casted_mapping(*values, **named_values)
         return OrderedDict(((k, mapping[k]) for k in cls.names()))
-        return OrderedDict(mapping)
 
     @classmethod
     def tuple(cls, *values, **named_values):

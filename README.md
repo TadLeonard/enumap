@@ -86,7 +86,7 @@ OrderedDict([('index', 134), ('cost', Decimal('25014.99')), ...])
 ```
 
 ## Sparse collections with the less strict `SparseEnumap`
-Create collections with `None` defaults:
+Create collections with `None` (or other) defaults:
 ```python
 >>> from enumap import SparseEnumap
 >>> SparsePie = SparseEnumap("SparsePie", "rhubarb cherry mud")
@@ -94,6 +94,13 @@ Create collections with `None` defaults:
 SparsePie_tuple(rhubarb=None, cherry=None, mud=None)
 >>> SparsePie.tuple(2, cherry=1)
 SparsePie_tuple(rhubarb=2, cherry=1, mud=None)
+```
+
+Use `SparseEnumap.set_defaults` to set more useful default values:
+```python
+>>> SparsePie.set_defaults(cherry=0, mud=0)
+>>> SparsePie.tuple(30)
+SparsePie_tuple(rhubarb=30, cherry=0, mud=0)
 ```
 
 Still, invalid keys are not allowed:
