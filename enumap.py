@@ -178,5 +178,5 @@ class SparseEnumap(Enumap):
         mapping = cls._make_checked_mapping(*values, **named_values)
         types = cls.types()
         defaults = cls.defaults()
-        return {k: (types[k](v) if v != defaults[k] else v)
+        return {k: (types[k](v) if v != defaults[k] and types[k] else v)
                 for k, v in mapping.items()}
