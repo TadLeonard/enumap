@@ -105,9 +105,45 @@ def test_bad_key():
     assert "invalid keys {'f'}" in str(ke)
 
 
-def test_sparse_mapping():
+def test_sparse_defaults():
+    a = SEM("a", names="b c d e")
+    a.set_defaults(c="WONK", d=0)
+    assert a.tuple(**a.defaults()) == (None, "WONK", 0, None)
+
+
+def test_sparse_tuple():
+    a = SEM("a", names="b c d e")
+    a.set_defaults(c="WONK", d=0)
+    assert (a.tuple(*"1 3".split(), c="2.2") ==
+            ("1", "2.2", 0, None))
+
+
+def test_sparse_map():
     a = SEM("a", names="b c e")
-    assert a.tuple(*"1 3".split(), c="2.2") == ("1", "2.2", None)
+    assert (a.map(*"1 3".split(), c="2.2") ==
+            OrderedDict([("b", "1"), ("c", "2.2"), ("e", None)]))
+
+
+def test_sparse_casted_tuple():
+    a = SEM("a", names="a b c e")
+    a.set_types(to_int, to_int, float, float)
+    casted_tuple = a.tuple_casted(*"1.1 2.2 3.3".split())
+    assert casted_tuple == (1, 2, 3.3, None)  # missing values aren't casted
+
+
+def test_sparse_casted_tuple_with_default():
+    a = SEM("a", names="a b c e")
+    a.set_types(to_int, to_int, float, int)
+    a.set_defaults(e="HOOP")
+    casted_tuple = a.tuple_casted(*"1.1 2.2".split())
+    assert casted_tuple == (1, 2, None, "HOOP")  # missing values aren't casted
+
+
+def test_sparse_casted_map():
+    a = SEM("a", names="a b c e")
+    a.set_types(to_int, to_int, float, float)
+    casted_map = a.map_casted(*"1.1 2.2 3.3".split())
+    assert tuple(casted_map.values()) == (1, 2, 3.3, None)
 
 
 def test_sparse_bad_key():
