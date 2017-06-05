@@ -146,6 +146,15 @@ def test_sparse_casted_map():
     assert tuple(casted_map.values()) == (1, 2, 3.3, None)
 
 
+def test_sparse_types():
+    """Check that SparseEnumap's types can be sparse.
+    Missing type callables won't be called on values."""
+    a = SEM("a", names="a b c e")
+    a.set_types(int, int, int)  # sparse types; only two of four set
+    a.set_defaults(b=3000, c="heyo")
+    assert a.tuple_casted("1", "1") == (1, 1, "heyo", None)
+
+
 def test_sparse_bad_key():
     a = SEM("a", names="b c e")
     with pytest.raises(KeyError) as ke:
