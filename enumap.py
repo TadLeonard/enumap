@@ -3,7 +3,7 @@ from enum import Enum
 from itertools import zip_longest
 
 
-__version__ = "1.2.1"
+__version__ = "1.2.2"
 
 
 class Enumap(Enum):
@@ -107,7 +107,7 @@ class Enumap(Enum):
                 types = cls.__member_types = cls.__annotations__
             else:
                 raise TypeError("{cls} has no types or type annotations")
-        return types
+        return cls.map(**types)
 
     @classmethod
     def _make_checked_mapping(cls, *values, **named_values):

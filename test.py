@@ -155,6 +155,25 @@ def test_sparse_types():
     assert a.tuple_casted("1", "1") == (1, 1, "heyo", None)
 
 
+def test_sparse_annotations():
+    """Check that SparseEnumap allows for sparse type annotations"""
+    class A(SEM):
+        a: float = 1
+        b: float = 2
+        c = 3
+        d = 4
+
+    assert dict(A.types()) == dict(a=float, b=float, c=None, d=None)
+    assert dict(A.map_casted(*("1.2 1 hello world".split()))) == \
+           dict(a=1.2, b=1.0, c="hello", d="world")
+
+
+def test_nonsparse_types():
+    a = EM("a", "a b c")
+    with pytest.raises(KeyError) as k:
+        a.set_types(a=int, b=int)
+
+
 def test_sparse_bad_key():
     a = SEM("a", names="b c e")
     with pytest.raises(KeyError) as ke:
