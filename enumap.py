@@ -3,7 +3,7 @@ from enum import Enum
 from itertools import zip_longest
 
 
-__version__ = "1.2.2"
+__version__ = "1.2.3"
 
 
 class Enumap(Enum):
