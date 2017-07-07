@@ -119,17 +119,20 @@ def test_smallish_sparse_map():
 
 def test_smallish_casted_tuple():
     data = "1 2 3 4 5 6 7 8 9 10 11".split()
-    incomplete_data = data[:-1]
+    incomplete_data = data[:-4]
     sparse_spec = SparseEnumap("ThingSparse", "a b c d e f g h i j k")
-    sparse_spec.set_types(*[int]*11)
-    sparse_spec.set_defaults(*[0]*11)
+    sparse_spec.set_types(*[int]*4)
+    sparse_spec.set_defaults(*[0]*8)
     spec = Enumap("Thing", sparse_spec.names())
     spec.set_types(*[int]*11)
+    sparse_typeless_spec = SparseEnumap(
+        "ThingSparseTypless", "a b c d e f g h i j k")
 
     print()
     print(spec.tuple_casted(*data))
     print(spec.tuple_casted(*data, d="9999999"))
     print(sparse_spec.tuple_casted(*incomplete_data))
+    print(sparse_typeless_spec.tuple_casted(*incomplete_data))
 
     # time Enumap.tuple() when all data is given
     enumap_tuple_time = timeit(
@@ -156,6 +159,12 @@ def test_smallish_casted_tuple():
         globals=dict(data=incomplete_data, spec=sparse_spec),
         number=N_RUNS)
 
+    # time SparseEnumap.tuple() when partial data is given
+    enumap_sparse_typeless_tuple_time = timeit(
+        "spec.tuple_casted(*data)",
+        globals=dict(data=incomplete_data, spec=sparse_typeless_spec),
+        number=N_RUNS)
+
     # time a regular tuple(iterable) call
     regular_tuple_time = timeit("tuple(map(int, data))",
                                 globals=dict(data=data),
@@ -171,5 +180,6 @@ def test_smallish_casted_tuple():
     print(f"{'Enumap.tuple_casted (with kwargs)':<40} {enumap_kwargs_tuple_time:.2f}")
     print(f"{'Enumap.tuple_casted (with override)':<40} {enumap_override_tuple_time:.2f}")
     print(f"{'Enumap.tuple_casted (sparse)':<40} {enumap_sparse_tuple_time:.2f}")
+    print(f"{'Enumap.tuple_casted (sparse, typeless)':<40} {enumap_sparse_typeless_tuple_time:.2f}")
     print(f"{'tuple(map(int, ...))':<40} {regular_tuple_time:.2f}")
     print(f"{'namedtuple(map(int, ...))':<40} {named_tuple_time:.2f}")
