@@ -163,15 +163,89 @@ def test_sparse_annotations():
         c = 3
         d = 4
 
-    assert dict(A.types()) == dict(a=float, b=float, c=None, d=None)
+    assert dict(A.types()) == dict(a=float, b=float)
     assert dict(A.map_casted(*("1.2 1 hello world".split()))) == \
            dict(a=1.2, b=1.0, c="hello", d="world")
 
 
+def test_too_many_args():
+    """Ensure that Enumaps will not accept too many arguments"""
+    class A(EM):
+        a = 1
+        b = 2
+        c = 3
+
+    with pytest.raises(KeyError) as e:
+        A.tuple(3, 4, 5, 6)
+    assert "expected 3 arguments, got 4" in str(e)
+
+    with pytest.raises(KeyError) as e:
+        A.map(3, 4, 5, 6)
+    assert "expected 3 arguments, got 4" in str(e)
+
+
+def test_too_many_args_casted():
+    """Ensure that Enumaps will not accept too many arguments for
+    *_casted methods"""
+    class A(EM):
+        a: int = 1
+        b: int = 2
+        c: int = 3
+
+    with pytest.raises(KeyError) as e:
+        A.tuple_casted(3, 4, 5, 6)
+    assert "expected 3 arguments, got 4" in str(e)
+
+    with pytest.raises(KeyError) as e:
+        A.map_casted(3, 4, 5, 6)
+    assert "expected 3 arguments, got 4" in str(e)
+
+
+def test_too_many_args_sparse():
+    """Ensure that SparseEnumaps will not accept too many arguments"""
+    class A(SEM):
+        a: int = 1
+        b = 2
+        c: int = 3
+
+    with pytest.raises(KeyError) as e:
+        A.tuple(3, 4, 5, 6)
+    assert "expected 3 arguments, got 4" in str(e)
+
+    with pytest.raises(KeyError) as e:
+        A.map(3, 4, 5, 6)
+    assert "expected 3 arguments, got 4" in str(e)
+
+
+def test_typless():
+    """Make sure types are allowed to be blank"""
+    a = EM("A", "a b c".split())
+    b = SEM("B", "a b c".split())
+    assert a.types() == {}
+    assert b.types() == {}
+
+
+def test_too_many_args_sparse_casted():
+    """Ensure that SparseEnumaps will not accept too many arguments for
+    *_casted methods"""
+    class A(SEM):
+        a: int = 1
+        b = 2
+        c: int = 3
+
+    with pytest.raises(KeyError) as e:
+        A.tuple_casted(3, 4, 5, 6)
+    assert "expected 3 arguments, got 4" in str(e)
+
+    with pytest.raises(KeyError) as e:
+        A.map_casted(3, 4, 5, 6)
+    assert "expected 3 arguments, got 4" in str(e)
+
+
 def test_nonsparse_types():
     a = EM("a", "a b c")
-    with pytest.raises(KeyError) as k:
-        a.set_types(a=int, b=int)
+    a.set_types(a=int, b=int)
+    assert a.types() == dict(a=int, b=int)
 
 
 def test_sparse_bad_key():
