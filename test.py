@@ -153,6 +153,17 @@ def test_sparse_types():
     a.set_types(int, int, int)  # sparse types; only two of four set
     a.set_defaults(b=3000, c="heyo")
     assert a.tuple_casted("1", "1") == (1, 1, "heyo", None)
+    a = EM("a", "a b c")
+    a.set_types(a=int, b=int)
+    assert a.types() == dict(a=int, b=int)
+
+
+def test_typless():
+    """Make sure types are allowed to be blank"""
+    a = EM("A", "a b c".split())
+    b = SEM("B", "a b c".split())
+    assert a.types() == {}
+    assert b.types() == {}
 
 
 def test_sparse_annotations():
@@ -232,20 +243,6 @@ def test_too_many_args_sparse_casted():
     with pytest.raises(KeyError) as e:
         A.map_casted(3, 4, 5, 6)
     assert "expected 3 arguments, got 4" in str(e)
-
-
-def test_typless():
-    """Make sure types are allowed to be blank"""
-    a = EM("A", "a b c".split())
-    b = SEM("B", "a b c".split())
-    assert a.types() == {}
-    assert b.types() == {}
-
-
-def test_sparse_types():
-    a = EM("a", "a b c")
-    a.set_types(a=int, b=int)
-    assert a.types() == dict(a=int, b=int)
 
 
 def test_sparse_bad_key():
