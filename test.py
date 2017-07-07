@@ -217,14 +217,6 @@ def test_too_many_args_sparse():
     assert "expected 3 arguments, got 4" in str(e)
 
 
-def test_typless():
-    """Make sure types are allowed to be blank"""
-    a = EM("A", "a b c".split())
-    b = SEM("B", "a b c".split())
-    assert a.types() == {}
-    assert b.types() == {}
-
-
 def test_too_many_args_sparse_casted():
     """Ensure that SparseEnumaps will not accept too many arguments for
     *_casted methods"""
@@ -242,7 +234,15 @@ def test_too_many_args_sparse_casted():
     assert "expected 3 arguments, got 4" in str(e)
 
 
-def test_nonsparse_types():
+def test_typless():
+    """Make sure types are allowed to be blank"""
+    a = EM("A", "a b c".split())
+    b = SEM("B", "a b c".split())
+    assert a.types() == {}
+    assert b.types() == {}
+
+
+def test_sparse_types():
     a = EM("a", "a b c")
     a.set_types(a=int, b=int)
     assert a.types() == dict(a=int, b=int)
