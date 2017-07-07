@@ -8,7 +8,7 @@ N_RUNS = 100_000
 
 def test_smallish_sparse_tuple():
     data = "1 2 3 4 5 6 7 8 9 10 11".split()
-    incomplete_data = data[:-1]
+    incomplete_data = data[:-6]
     sparse_spec = SparseEnumap("ThingSparse", "a b c d e f g h i j k")
     spec = Enumap("Thing", sparse_spec.names())
 
@@ -63,7 +63,7 @@ def test_smallish_sparse_tuple():
 
 def test_smallish_sparse_map():
     data = "1 2 3 4 5 6 7 8 9 10 11".split()
-    incomplete_data = data[:-1]
+    incomplete_data = data[:-6]
     sparse_spec = SparseEnumap("ThingSparse", "a b c d e f g h i j k")
     spec = Enumap("Thing", sparse_spec.names())
 
@@ -119,12 +119,11 @@ def test_smallish_sparse_map():
 
 def test_smallish_casted_tuple():
     data = "1 2 3 4 5 6 7 8 9 10 11".split()
-    incomplete_data = data[:-4]
+    incomplete_data = data[:-6]
     sparse_spec = SparseEnumap("ThingSparse", "a b c d e f g h i j k")
-    sparse_spec.set_types(*[int]*4)
-    sparse_spec.set_defaults(*[0]*8)
+    sparse_spec.set_types(a=int, e=int)
     spec = Enumap("Thing", sparse_spec.names())
-    spec.set_types(*[int]*11)
+    spec.set_types(a=int, e=int)
     sparse_typeless_spec = SparseEnumap(
         "ThingSparseTypless", "a b c d e f g h i j k")
 
