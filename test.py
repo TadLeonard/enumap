@@ -57,9 +57,9 @@ def test_tuple_casted_1():
 
 def test_annotated_tuple_casted():
     class Order(str, EM):
-       index: int = "Order ID"
-       cost: Decimal = "Total pretax cost"
-       due_on: str = "Delivery date"
+        index: int = "Order ID"
+        cost: Decimal = "Total pretax cost"
+        due_on: str = "Delivery date"
 
     assert Order.tuple_casted(*"12 142.22 2017-04-02".split()) == \
            (12, Decimal("142.22"), "2017-04-02")
@@ -67,9 +67,9 @@ def test_annotated_tuple_casted():
 
 def test_annotated_map_casted():
     class Order(str, EM):
-       index: int = "Order ID"
-       cost: Decimal = "Total pretax cost"
-       due_on: str = "Delivery date"
+        index: int = "Order ID"
+        cost: Decimal = "Total pretax cost"
+        due_on: str = "Delivery date"
 
     assert Order.map_casted(*"12 142.22 2017-04-07".split()) == \
            dict(index=12, cost=Decimal("142.22"), due_on="2017-04-07")
