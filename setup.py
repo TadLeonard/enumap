@@ -13,13 +13,10 @@ url = "https://github.com/TadLeonard/enumap"
 download = "{}/archive/{}.tar.gz".format(url, version)
 description = "Ordered collections inspired by Enum"
 long_description = f"""
-Enumap: ordered collections that are hard to screw up
-=====================================================
+Enumap: ordered data kept orderly
+=================================
 
-``Enumap`` is an ``Enum`` that helps you manage named, ordered values in a strict but convenient way.
-``Enumap`` isn't yet another collection,
-it's a store of keys that creates familiar ordered collections in a
-more expressive and less error prone way.
+Enumap is an Enum that helps you manage named, ordered values in a strict but convenient way. Enumap isn't yet another collection, it's a store of keys that creates familiar ordered collections in a more expressive and less error prone way.
 
 
 Documentation
