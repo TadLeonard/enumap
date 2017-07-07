@@ -192,19 +192,19 @@ class SparseEnumap(Enumap):
         on the `types()` mapping"""
         # note that the `fillvalue` keyword-only arg is ignored
         names = cls.names()
-        pairs = zip_longest(names, values, fillvalue=_FILL)
-        mapping = dict(pairs, **named_values)
-        if set(mapping) == set(names):
+        mapping = dict(zip(names, values), **named_values)
+        name_set = set(names)
+        present = set(mapping)
+        missing = name_set - present
+        invalid = present - name_set
+        if not invalid and len(values) <= len(names):
             types = cls.types()
             if types:
                 mapping.update(((k, v(mapping[k]))
-                               for k, v in types.items()
-                               if mapping[k] is not _FILL))
+                                for k, v in types.items()
+                                if k not in missing))
             defaults = cls.defaults()
-            mapping.update(((k, defaults[k])
-                            for k, v in mapping.items()
-                            if v is _FILL))
-
+            mapping.update(((k, defaults[k]) for k in missing))
             return mapping
         else:
             cls._raise_invalid_args(values, mapping, names)
