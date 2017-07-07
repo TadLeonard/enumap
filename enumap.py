@@ -93,21 +93,26 @@ class Enumap(Enum):
         >>> Pastry.types()  # donut kwarg overrides donut arg
         {'croissant': int, 'donut': float, 'muffin': int}
         """
-        mapping = cls._make_checked_mapping(*types, **named_types)
-        cls.__member_types = mapping
+        # type mappings are allowed to be a subset of the member keys
+        # in other words, not all members have to have a type
+        sparse_types = SparseEnumap("temporary_types", cls.names())
+        sparse_type_map = sparse_types.map(*types, **named_types)
+        non_null_types = {k: v for k, v in sparse_type_map.items()
+                          if v is not None}
+        type_subset = Enumap(f"{cls.__name__}_types",
+                             tuple(non_null_types.keys()))
+        cls.__member_types = type_subset.map(*types, **named_types)
 
     @classmethod
     def types(cls):
         """Mapping like `{member_name: callable}` for `map/tuple_casted`.
         This can either come from type annotations or `set_types`."""
         try:
-            types = cls.__member_types
+            return cls.__member_types
         except AttributeError:
-            if hasattr(cls, "__annotations__"):
-                types = cls.__member_types = cls.__annotations__
-            else:
-                raise TypeError("{cls} has no types or type annotations")
-        return cls.map(**types)
+            types = dict(getattr(cls, "__annotations__", {}))
+            cls.__member_types = types
+            return cls.__member_types
 
     @classmethod
     def _make_checked_mapping(cls, *values, **named_values):
@@ -116,13 +121,10 @@ class Enumap(Enum):
         missing and invalid keys."""
         names = cls.names()
         mapping = dict(zip(names, values), **named_values)
-        if set(mapping) == set(names):
+        if set(mapping) == set(names) and len(values) <= len(names):
             return mapping
         else:
-            missing = set(names) - set(mapping)
-            invalid = set(mapping) - set(names)
-            raise KeyError(f"{cls.__name__} requires keys {names}; "
-                           f"missing keys {missing}; invalid keys {invalid}")
+            cls._raise_invalid_args(values, mapping, names)
 
     @classmethod
     def _make_casted_mapping(cls, *values, **named_values):
@@ -130,7 +132,23 @@ class Enumap(Enum):
         on the `types()` mapping"""
         mapping = cls._make_checked_mapping(*values, **named_values)
         types = cls.types()
-        return {k: types[k](v) for k, v in mapping.items()}
+        mapping.update(((k, types[k](mapping[k])) for k, v in types.items()))
+        return mapping
+
+    @classmethod
+    def _raise_invalid_args(cls, values, mapping, names):
+        missing = (set(names) - set(mapping)) or {}
+        invalid = (set(mapping) - set(names)) or {}
+        if len(values) > len(names):
+            n_args = len(values)
+            n_expected = len(names)
+            raise KeyError(
+                f"{cls.__name__} requires keys {names}; "
+                f"expected {n_expected} arguments, got {n_args}")
+        else:
+            raise KeyError(
+                f"{cls.__name__} requires keys {names}; "
+                f"missing keys {missing}; invalid keys {invalid}")
 
 
 _FILL = object()  # sentinal for missing values in sparse collections
@@ -142,15 +160,15 @@ class SparseEnumap(Enumap):
 
     @classmethod
     def set_defaults(cls, *values, **named_values):
-        mapping = cls._make_checked_mapping(*values, **named_values)
-        cls.__member_defaults = mapping
+        cls.__member_defaults = cls.map(*values, **named_values)
 
     @classmethod
     def defaults(cls):
         try:
             return cls.__member_defaults
         except AttributeError:
-            cls.__member_defaults = {k: None for k in cls.names()}
+            default_maker = Enumap(f"{cls.__name__}_defaults", cls.names())
+            cls.__member_defaults = default_maker.map(*[None] * len(cls))
             return cls.__member_defaults
 
     @classmethod
@@ -166,17 +184,40 @@ class SparseEnumap(Enumap):
             return {k: (v if v is not _FILL else defaults[k])
                     for k, v in mapping.items()}
         else:
-            invalid = set(mapping) - set(names)
-            raise KeyError(f"{cls.__name__} requires keys {names}; "
-                           f"invalid keys {invalid}")
+            cls._raise_invalid_args(values, mapping, names)
 
     @classmethod
     def _make_casted_mapping(cls, *values, fillvalue=None, **named_values):
         """Like `_make_checked_mapping`, but values are casted based
         on the `types()` mapping"""
         # note that the `fillvalue` keyword-only arg is ignored
-        mapping = cls._make_checked_mapping(*values, **named_values)
-        types = cls.types()
-        defaults = cls.defaults()
-        return {k: (types[k](v) if v != defaults[k] and types[k] else v)
-                for k, v in mapping.items()}
+        names = cls.names()
+        pairs = zip_longest(names, values, fillvalue=_FILL)
+        mapping = dict(pairs, **named_values)
+        if set(mapping) == set(names):
+            types = cls.types()
+            if types:
+                mapping.update(((k, v(mapping[k]))
+                               for k, v in types.items()
+                               if mapping[k] is not _FILL))
+            defaults = cls.defaults()
+            mapping.update(((k, defaults[k])
+                            for k, v in mapping.items()
+                            if v is _FILL))
+
+            return mapping
+        else:
+            cls._raise_invalid_args(values, mapping, names)
+
+    @classmethod
+    def _raise_invalid_args(cls, values, mapping, names):
+        if len(values) > len(names):
+            n_args = len(values)
+            n_expected = len(names)
+            raise KeyError(
+                f"{cls.__name__} requires keys {names}; "
+                f"expected {n_expected} arguments, got {n_args}")
+        else:
+            invalid = set(mapping) - set(names)
+            raise KeyError(f"{cls.__name__} requires keys {names}; "
+                           f"invalid keys {invalid}")
