@@ -28,11 +28,8 @@ class Enumap(Enum):
         >>> Fruit.map("heart-shaped", "spherical", papaya="ellipsoid")
         OrderedDict([('apple', 'heart-shaped'), ('orange', ...), ...])
         """
-        try:
-            return cls.tuple_class()(*values, **named_values)._asdict()
-        except TypeError:
-            mapping = cls._make_checked_mapping(*values, **named_values)
-            return OrderedDict(((k, mapping[k]) for k in cls.names()))
+        mapping = cls._make_checked_mapping(*values, **named_values)
+        return OrderedDict(((k, mapping[k]) for k in cls.names()))
 
     @classmethod
     def map_casted(cls, *values, **named_values):
@@ -167,8 +164,7 @@ class SparseEnumap(Enumap):
         try:
             return cls.__member_defaults
         except AttributeError:
-            default_maker = Enumap(f"{cls.__name__}_defaults", cls.names())
-            cls.__member_defaults = default_maker.map(*[None] * len(cls))
+            cls.__member_defaults = {}
             return cls.__member_defaults
 
     @classmethod
@@ -177,34 +173,67 @@ class SparseEnumap(Enumap):
         of the members of this Enum. Raises `KeyError` for both
         missing and invalid keys."""
         names = cls.names()
+        names_set = set(names)
         defaults = cls.defaults()
-        pairs = zip_longest(names, values, fillvalue=_FILL)
-        mapping = dict(pairs, **named_values)
-        if set(mapping) == set(names):
-            return {k: (v if v is not _FILL else defaults[k])
-                    for k, v in mapping.items()}
+
+        # Create a mapping which will be a subset of the final,
+        # sparse mapping. As we go, record which values are present
+        # in the mapping and which are missing.
+        if defaults:
+            mapping = dict(zip(names, values), **named_values)
+            missing = names_set - set(mapping)
+            mapping.update(((k, defaults[k]) for k in missing))
+        else:
+            mapping = dict(zip_longest(names, values), **named_values)
+
+        # If we haven't been passed invalid keys and we haven't been
+        # passed too many positional arguments, return the mapping
+        if set(mapping) == names_set and len(values) <= len(names):
+            return mapping
         else:
             cls._raise_invalid_args(values, mapping, names)
 
     @classmethod
-    def _make_casted_mapping(cls, *values, fillvalue=None, **named_values):
+    def _make_casted_mapping(cls, *values, **named_values):
         """Like `_make_checked_mapping`, but values are casted based
         on the `types()` mapping"""
-        # note that the `fillvalue` keyword-only arg is ignored
         names = cls.names()
-        mapping = dict(zip(names, values), **named_values)
-        name_set = set(names)
-        present = set(mapping)
-        missing = name_set - present
-        invalid = present - name_set
-        if not invalid and len(values) <= len(names):
-            types = cls.types()
-            if types:
-                mapping.update(((k, v(mapping[k]))
-                                for k, v in types.items()
-                                if k not in missing))
-            defaults = cls.defaults()
+        names_set = set(names)
+        defaults = cls.defaults()
+
+        # Create a mapping which will be a subset of the final,
+        # sparse mapping. As we go, record which values are present
+        # in the mapping and which are missing.
+        if defaults:
+            mapping = dict(zip(names, values), **named_values)
+            present = set(mapping)
+            missing = names_set - present
             mapping.update(((k, defaults[k]) for k in missing))
+        else:
+            mapping = dict(zip(names, values), **named_values)
+            present = set(mapping)
+            missing = names_set - present
+
+        # Cast the values of our mapping with the the type function
+        # corresponding to their keys. We use the `missing` set of keys
+        # as a guide here because we don't want to cast missing or default
+        # values.
+        types = cls.types()
+        if types:
+            present_typed = present & set(types)
+            mapping.update(((k, types[k](mapping[k]))
+                            for k in present_typed))
+
+        # Handle default values to create a sparse mapping.
+        # Missing values will either be filled in with what's in the
+        # `defaults` mapping or with None if the user hasn't set defaults.
+        temp = dict(defaults) or {}.fromkeys(names)
+        temp.update(mapping)
+        mapping = temp
+
+        # If we haven't been passed invalid keys and we haven't been
+        # passed too many positional arguments, return the mapping
+        if not present - names_set and len(values) <= len(names):
             return mapping
         else:
             cls._raise_invalid_args(values, mapping, names)
