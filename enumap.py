@@ -129,8 +129,7 @@ class Enumap(enum.Enum):
         """Like `_make_checked_mapping`, but values are casted based
         on the `types()` mapping"""
         mapping = cls._make_checked_mapping(*values, **named_values)
-        types = cls.types()
-        mapping.update(((k, types[k](mapping[k])) for k, v in types.items()))
+        mapping.update(_type_cast_items(mapping, cls.types()))
         return mapping
 
     @classmethod
@@ -147,6 +146,34 @@ class Enumap(enum.Enum):
             raise KeyError(
                 f"{cls.__name__} requires keys {names}; "
                 f"missing keys {missing}; invalid keys {invalid}")
+
+
+def _type_cast_items(mapping, types):
+    """Generates key/value pairs for which each
+    value is casted with the callable in the `types` mapping.
+    """
+    key = value = None
+    try:
+        for key, type_callable in types.items():
+            yield key, type_callable(mapping[key])
+    except Exception as e:
+        value_type = type(value)
+        raise TypeCastError(f"Key '{key}' got invalid value '{value}' "
+                            f"of type {value_type} (error: '{e}')", key)
+
+
+class TypeCastError(TypeError):
+    """Raised when an Enumap field raises an exception
+    during type casting for Enumap.tuple_casted or Enumap.map_casted
+
+    Attributes
+        key: key or field name for which a value could not be
+             successfully type casted
+    """
+
+    def __init__(self, message, key):
+        super().__init__(message)
+        self.key = key
 
 
 class default(enum.auto):
