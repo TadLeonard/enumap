@@ -2,7 +2,7 @@
 
 import pytest
 from collections import OrderedDict
-from enumap import Enumap as EM, SparseEnumap as SEM
+from enumap import Enumap as EM, SparseEnumap as SEM, default
 from decimal import Decimal
 
 
@@ -116,6 +116,27 @@ def test_sparse_tuple():
     a.set_defaults(c="WONK", d=0)
     assert (a.tuple(*"1 3".split(), c="2.2") ==
             ("1", "2.2", 0, None))
+
+
+def test_declarative_defaults():
+    """ Check that enumap.default(value) works as a declarative alternative
+    to SparseEnuamp.set_defaults(...)
+    """
+    class A(SEM):
+        a: int = default(5)
+        b: int = default(44)
+        c: float = default(5.2)
+
+    assert A.tuple() == (5, 44, 5.2)
+
+
+def test_declarative_casted_defaults():
+    class A(SEM):
+        a: int = default(5)
+        b: int = default(44)
+        c: float = default(5.2)
+
+    assert A.tuple_casted(c="9.9") == (5, 44, 9.9)
 
 
 def test_sparse_map():
