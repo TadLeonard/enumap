@@ -1,12 +1,13 @@
+import enum
+
 from collections import namedtuple, OrderedDict
-from enum import Enum
 from itertools import zip_longest
 
 
 __version__ = "1.2.3"
 
 
-class Enumap(Enum):
+class Enumap(enum.Enum):
     """An Enum that maps data to its ordered, named members.
     Produces OrderedDicts and namedtuples while ensuring that the
     keys/fields match the names of the Enum members."""
@@ -148,7 +149,59 @@ class Enumap(Enum):
                 f"missing keys {missing}; invalid keys {invalid}")
 
 
-_FILL = object()  # sentinal for missing values in sparse collections
+class default(enum.auto):
+    """A subclass of enum.auto that
+
+    1. behaves as a unqiue enum member because enum members that aren't unique
+       effectively become aliases
+    2. gives the user a way of signaling that an enum value should be used as
+       a default in the collections created by SparseEnumap.map() or .tuple()
+
+    Sample usage:
+
+        >>> class Pets(SparseEnumap):
+        ...    dogs: int = default(3)
+        ...    cats: int = default(44)
+        ...    squirrels: float = 3  # this isn't a default at all
+
+        >>> Pets.tuple()
+        Pets_tuple(dogs=3, cats=44, squirrels=None)
+    """
+    _value = (enum.auto.value, None)
+
+    def __init__(self, default_value=None):
+        self._value = (enum.auto.value, default_value)
+
+    @property
+    def value(self):
+        return self
+        return self._value
+
+    @value.setter
+    def value(self, new_value):
+        actual_default = self._value[-1]
+        self._value = (new_value, actual_default)
+
+    @property
+    def default(self):
+        return self._value[1]
+
+
+def _iter_member_defaults(members):
+    """Iterates through Enum members and teases out the default value
+    the user selected with `default(<user's special value>)` from the
+    `default` object.
+    """
+    for k, v in members.items():
+        if isinstance(v.value, default):
+            yield k, v.value.default
+
+        # By not yielding k, v for non-default() objects, we avoid using
+        # things like auto() as defaults in our .tuple()/.map() collections.
+        # This makes it explicit when a user is using an enum value
+        # as a default while ALSO allowing SparseEnumaps to adhere to the
+        # rules of Enums. Each value of an Enum must be unique, and those that
+        # aren't are basically just aliases
 
 
 class SparseEnumap(Enumap):
@@ -164,7 +217,9 @@ class SparseEnumap(Enumap):
         try:
             return cls.__member_defaults
         except AttributeError:
-            cls.__member_defaults = {}
+            members = cls.__members__
+            member_defaults = dict(_iter_member_defaults(members))
+            cls.__member_defaults = member_defaults
             return cls.__member_defaults
 
     @classmethod
