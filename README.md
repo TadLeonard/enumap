@@ -96,7 +96,7 @@ SparsePie_tuple(rhubarb=None, cherry=None, mud=None)
 SparsePie_tuple(rhubarb=2, cherry=1, mud=None)
 ```
 
-Use `enum.default()` to declaratively specify defaults for missing values:
+Use `enumap.default()` to declaratively specify defaults for missing values:
 ```python
 >>> class SparsePie(SparseEnumap):
 ...    rhubarb = default(33)

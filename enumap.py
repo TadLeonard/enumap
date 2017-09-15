@@ -167,7 +167,6 @@ class default(enum.auto):
         >>> Pets.tuple()
         Pets_tuple(dogs=3, cats=44, squirrels=None)
     """
-    _value = (enum.auto.value, None)
 
     def __init__(self, default_value=None):
         self._value = (enum.auto.value, default_value)
@@ -175,7 +174,6 @@ class default(enum.auto):
     @property
     def value(self):
         return self
-        return self._value
 
     @value.setter
     def value(self, new_value):
