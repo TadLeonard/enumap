@@ -9,8 +9,8 @@ from enumap import Enumap, SparseEnumap, default, TypeCastError
 
 def test_map():
     a = Enumap("a", names="b c e")
-    assert a.map(1, 2, 3, e=33) == \
-           OrderedDict([('b', 1), ('c', 2), ('e', 33)])
+    assert (a.map(1, 2, 3, e=33) ==
+            OrderedDict([('b', 1), ('c', 2), ('e', 33)]))
 
 
 def test_tuple():
@@ -29,7 +29,8 @@ def test_ordering():
     assert list(b.tuple(*range(100), n42=9000)) == expected_b
 
 
-to_int = lambda num: int(float(num))
+def to_int(num):
+    return int(float(num))
 
 
 def test_map_casted_0():
@@ -62,8 +63,8 @@ def test_annotated_tuple_casted():
         cost: Decimal = "Total pretax cost"
         due_on: str = "Delivery date"
 
-    assert Order.tuple_casted(*"12 142.22 2017-04-02".split()) == \
-           (12, Decimal("142.22"), "2017-04-02")
+    assert (Order.tuple_casted(*"12 142.22 2017-04-02".split()) ==
+            (12, Decimal("142.22"), "2017-04-02"))
 
 
 def test_annotated_map_casted():
@@ -72,8 +73,8 @@ def test_annotated_map_casted():
         cost: Decimal = "Total pretax cost"
         due_on: str = "Delivery date"
 
-    assert Order.map_casted(*"12 142.22 2017-04-07".split()) == \
-           dict(index=12, cost=Decimal("142.22"), due_on="2017-04-07")
+    assert (Order.map_casted(*"12 142.22 2017-04-07".split()) ==
+            dict(index=12, cost=Decimal("142.22"), due_on="2017-04-07"))
 
 
 def test_names():
@@ -179,6 +180,7 @@ def test_type_cast_exception():
         A.tuple_casted("1", None)
     assert "'this_here_is_a_bad_key' got invalid value 'None'" in str(e)
     assert "of type <class 'NoneType'>" in str(e)
+    assert e.value.key == "this_here_is_a_bad_key"
 
 
 def test_sparse_types():
@@ -210,8 +212,8 @@ def test_sparse_annotations():
         d = 4
 
     assert dict(A.types()) == dict(a=float, b=float)
-    assert dict(A.map_casted(*("1.2 1 hello world".split()))) == \
-           dict(a=1.2, b=1.0, c="hello", d="world")
+    assert (dict(A.map_casted(*("1.2 1 hello world".split()))) ==
+            dict(a=1.2, b=1.0, c="hello", d="world"))
 
 
 def test_too_many_args():
