@@ -133,7 +133,7 @@ def test_declarative_defaults():
 
 
 def test_declarative_defaults_sparse():
-    class A(SEM):
+    class A(SparseEnumap):
         a: int = 5
         b: int = default(44)
         c: float = default(5.2)
@@ -151,12 +151,12 @@ def test_declarative_casted_defaults():
 
 
 def test_declarative_defaults_dictionary():
-    class A(SEM):
+    class A(SparseEnumap):
         a: int = default(5)
         b: int = 2
         c: float = default(5.2)
 
-    class B(SEM):
+    class B(SparseEnumap):
         a: int = 1
         b: int = 2
         c: float = 3
