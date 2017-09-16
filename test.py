@@ -148,6 +148,21 @@ def test_declarative_casted_defaults():
     assert A.tuple_casted(c="9.9") == (5, 44, 9.9)
 
 
+def test_declarative_defaults_dictionary():
+    class A(SEM):
+        a: int = default(5)
+        b: int = 2
+        c: float = default(5.2)
+
+    class B(SEM):
+        a: int = 1
+        b: int = 2
+        c: float = 3
+
+    B.set_defaults(a=5, c=5.2)
+    assert B.defaults() == A.defaults()
+
+
 def test_sparse_map():
     a = SEM("a", names="b c e")
     assert (a.map(*"1 3".split(), c="2.2") ==
