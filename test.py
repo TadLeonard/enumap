@@ -132,6 +132,15 @@ def test_declarative_defaults():
     assert A.tuple() == (5, 44, 5.2)
 
 
+def test_declarative_defaults_sparse():
+    class A(SEM):
+        a: int = 5
+        b: int = default(44)
+        c: float = default(5.2)
+
+    assert A.tuple() == (None, 44, 5.2)
+
+
 def test_declarative_casted_defaults():
     class A(SparseEnumap):
         a: int = default(5)
@@ -139,6 +148,21 @@ def test_declarative_casted_defaults():
         c: float = default(5.2)
 
     assert A.tuple_casted(c="9.9") == (5, 44, 9.9)
+
+
+def test_declarative_defaults_dictionary():
+    class A(SEM):
+        a: int = default(5)
+        b: int = 2
+        c: float = default(5.2)
+
+    class B(SEM):
+        a: int = 1
+        b: int = 2
+        c: float = 3
+
+    B.set_defaults(a=5, c=5.2)
+    assert B.defaults() == A.defaults()
 
 
 def test_sparse_map():
