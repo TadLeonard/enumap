@@ -216,7 +216,10 @@ class SparseEnumap(Enumap):
             return cls.__member_defaults
         except AttributeError:
             members = cls.__members__
-            member_defaults = dict(_iter_member_defaults(members))
+            defaults_spec = Enumap("_Defaults", cls.names())
+            declarative_defaults = dict(_iter_member_defeaults(members))
+            member_defaults = defaults_spec.map(
+                *[None] * len(cls), **declarative_defaults)
             cls.__member_defaults = member_defaults
             return cls.__member_defaults
 
