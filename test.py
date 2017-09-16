@@ -130,6 +130,15 @@ def test_declarative_defaults():
     assert A.tuple() == (5, 44, 5.2)
 
 
+def test_declarative_defaults_sparse():
+    class A(SEM):
+        a: int = 5
+        b: int = default(44)
+        c: float = default(5.2)
+
+    assert A.tuple() == (None, 44, 5.2)
+
+
 def test_declarative_casted_defaults():
     class A(SEM):
         a: int = default(5)
