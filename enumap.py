@@ -129,8 +129,7 @@ class Enumap(enum.Enum):
         """Like `_make_checked_mapping`, but values are casted based
         on the `types()` mapping"""
         mapping = cls._make_checked_mapping(*values, **named_values)
-        types = cls.types()
-        mapping.update(((k, types[k](mapping[k])) for k, v in types.items()))
+        mapping.update(_type_cast_items(mapping, cls.types()))
         return mapping
 
     @classmethod
@@ -147,6 +146,35 @@ class Enumap(enum.Enum):
             raise KeyError(
                 f"{cls.__name__} requires keys {names}; "
                 f"missing keys {missing}; invalid keys {invalid}")
+
+
+def _type_cast_items(mapping, types):
+    """Generates key/value pairs for which each
+    value is casted with the callable in the `types` mapping.
+    """
+    key = None
+    try:
+        for key, type_callable in types.items():
+            yield key, type_callable(mapping[key])
+    except Exception as e:
+        value = mapping.get(key)
+        value_type = type(value).__name__
+        raise TypeCastError(f"Key '{key}' got invalid value '{value}' "
+                            f"of type {value_type} (error: '{e}')", key)
+
+
+class TypeCastError(TypeError):
+    """Raised when an Enumap field raises an exception
+    during type casting for Enumap.tuple_casted or Enumap.map_casted
+
+    Attributes
+        key: key or field name for which a value could not be
+             successfully type casted
+    """
+
+    def __init__(self, message, key):
+        super().__init__(message)
+        self.key = key
 
 
 class default(enum.auto):
@@ -219,7 +247,7 @@ class SparseEnumap(Enumap):
             defaults_spec = Enumap("_Defaults", cls.names())
             declared_defaults = dict(_iter_member_defaults(members))
             member_defaults = defaults_spec.map(
-                *[None] * len(cls), **declarative_defaults)
+                *[None] * len(cls), **declared_defaults)
             cls.__member_defaults = member_defaults
             return cls.__member_defaults
 
@@ -277,8 +305,8 @@ class SparseEnumap(Enumap):
         types = cls.types()
         if types:
             present_typed = present & set(types)
-            mapping.update(((k, types[k](mapping[k]))
-                            for k in present_typed))
+            relevant_types = {key: types[key] for key in present_typed}
+            mapping.update(_type_cast_items(mapping, relevant_types))
 
         # Handle default values to create a sparse mapping.
         # Missing values will either be filled in with what's in the
