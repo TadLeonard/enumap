@@ -133,7 +133,7 @@ def test_declarative_defaults():
 
 
 def test_declarative_defaults_sparse():
-    class A(SEM):
+    class A(SparseEnumap):
         a: int = 5
         b: int = default(44)
         c: float = default(5.2)
@@ -151,12 +151,12 @@ def test_declarative_casted_defaults():
 
 
 def test_declarative_defaults_dictionary():
-    class A(SEM):
+    class A(SparseEnumap):
         a: int = default(5)
         b: int = 2
         c: float = default(5.2)
 
-    class B(SEM):
+    class B(SparseEnumap):
         a: int = 1
         b: int = 2
         c: float = 3
@@ -203,8 +203,39 @@ def test_type_cast_exception():
     with pytest.raises(TypeCastError) as e:
         A.tuple_casted("1", None)
     assert "'this_here_is_a_bad_key' got invalid value 'None'" in str(e)
-    assert "of type <class 'NoneType'>" in str(e)
+    assert "of type NoneType" in str(e)
     assert e.value.key == "this_here_is_a_bad_key"
+
+
+def test_type_cast_exception_non_nonetype():
+    """Make sure our type casting exceptions are informative"""
+    class A(Enumap):
+        a: int = auto()
+        this_here_is_a_fine_key = auto()
+
+    with pytest.raises(TypeCastError) as e:
+        A.tuple_casted("1.0", None)
+
+    assert "'a' got invalid value '1.0'" in str(e)
+    assert "of type str" in str(e)
+    assert e.value.key == "a"
+
+
+def test_type_cast_exception_sparse():
+    class A(SparseEnumap):
+        a: int = default(1)
+        b: float = default(2.0)
+        a_fine_key = auto()
+        c = default("a pastry")
+
+    assert A.tuple_casted() == (1, 2.0, None, "a pastry")
+
+    with pytest.raises(TypeCastError) as e:
+        A.tuple_casted("1.0")
+
+    assert "'a' got invalid value '1.0'" in str(e)
+    assert "of type str" in str(e)
+    assert e.value.key == "a"
 
 
 def test_sparse_types():

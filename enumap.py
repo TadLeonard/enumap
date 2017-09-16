@@ -152,12 +152,13 @@ def _type_cast_items(mapping, types):
     """Generates key/value pairs for which each
     value is casted with the callable in the `types` mapping.
     """
-    key = value = None
+    key = None
     try:
         for key, type_callable in types.items():
             yield key, type_callable(mapping[key])
     except Exception as e:
-        value_type = type(value)
+        value = mapping.get(key)
+        value_type = type(value).__name__
         raise TypeCastError(f"Key '{key}' got invalid value '{value}' "
                             f"of type {value_type} (error: '{e}')", key)
 
@@ -246,7 +247,7 @@ class SparseEnumap(Enumap):
             defaults_spec = Enumap("_Defaults", cls.names())
             declared_defaults = dict(_iter_member_defaults(members))
             member_defaults = defaults_spec.map(
-                *[None] * len(cls), **declarative_defaults)
+                *[None] * len(cls), **declared_defaults)
             cls.__member_defaults = member_defaults
             return cls.__member_defaults
 
@@ -304,8 +305,8 @@ class SparseEnumap(Enumap):
         types = cls.types()
         if types:
             present_typed = present & set(types)
-            mapping.update(((k, types[k](mapping[k]))
-                            for k in present_typed))
+            relevant_types = {key: types[key] for key in present_typed}
+            mapping.update(_type_cast_items(mapping, relevant_types))
 
         # Handle default values to create a sparse mapping.
         # Missing values will either be filled in with what's in the
