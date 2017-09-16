@@ -179,7 +179,7 @@ def test_type_cast_exception():
     with pytest.raises(TypeCastError) as e:
         A.tuple_casted("1", None)
     assert "'this_here_is_a_bad_key' got invalid value 'None'" in str(e)
-    assert "of type <class 'NoneType'>" in str(e)
+    assert "of type NoneType" in str(e)
     assert e.value.key == "this_here_is_a_bad_key"
 
 
@@ -193,7 +193,7 @@ def test_type_cast_exception_non_nonetype():
         A.tuple_casted("1.0", None)
 
     assert "'a' got invalid value '1.0'" in str(e)
-    assert "of type <class 'str'>" in str(e)
+    assert "of type str" in str(e)
     assert e.value.key == "a"
 
 

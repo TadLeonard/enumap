@@ -158,7 +158,7 @@ def _type_cast_items(mapping, types):
             yield key, type_callable(mapping[key])
     except Exception as e:
         value = mapping.get(key)
-        value_type = type(value)
+        value_type = type(value).__name__
         raise TypeCastError(f"Key '{key}' got invalid value '{value}' "
                             f"of type {value_type} (error: '{e}')", key)
 
