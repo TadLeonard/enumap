@@ -152,11 +152,12 @@ def _type_cast_items(mapping, types):
     """Generates key/value pairs for which each
     value is casted with the callable in the `types` mapping.
     """
-    key = value = None
+    key = None
     try:
         for key, type_callable in types.items():
             yield key, type_callable(mapping[key])
     except Exception as e:
+        value = mapping.get(key)
         value_type = type(value)
         raise TypeCastError(f"Key '{key}' got invalid value '{value}' "
                             f"of type {value_type} (error: '{e}')", key)
