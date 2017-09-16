@@ -187,10 +187,27 @@ def test_type_cast_exception_non_nonetype():
     """Make sure our type casting exceptions are informative"""
     class A(Enumap):
         a: int = auto()
-        this_here_is_a_bad_key = auto()
+        this_here_is_a_fine_key = auto()
 
     with pytest.raises(TypeCastError) as e:
         A.tuple_casted("1.0", None)
+
+    assert "'a' got invalid value '1.0'" in str(e)
+    assert "of type str" in str(e)
+    assert e.value.key == "a"
+
+
+def test_type_cast_exception_sparse():
+    class A(SparseEnumap):
+        a: int = default(1)
+        b: float = default(2.0)
+        a_fine_key = auto()
+        c = default("a pastry")
+
+    assert A.tuple_casted() == (1, 2.0, None, "a pastry")
+
+    with pytest.raises(TypeCastError) as e:
+        A.tuple_casted("1.0")
 
     assert "'a' got invalid value '1.0'" in str(e)
     assert "of type str" in str(e)
