@@ -349,3 +349,46 @@ def test_copy_from_names():
     a = Enumap("a", "b c d")
     b = Enumap("b", a.names())
     assert a.map(*range(3)) == b.map(*range(3))
+
+
+def test_repr():
+    """Make sure that EnumapMeta's __repr___ method works"""
+    a = Enumap("a", "b c d")
+    assert repr(a) == """a(
+    b,
+    c,
+    d
+)"""
+
+
+def test_repr_typed():
+    """Make sure that EnumapMeta's __repr___ method works with typed fields"""
+    class Tools(Enumap):
+        head = auto()
+        horse: float = auto()
+        donkey: int = auto()
+        spatula = auto()
+
+    assert repr(Tools) == """Tools(
+    head,
+    horse: float,
+    donkey: int,
+    spatula
+)"""
+
+
+def test_str():
+    """Check that EnumapMeta's __str__ method works"""
+    a = Enumap("a", "b c d")
+    assert str(a) == "a(b, c, d)"
+
+
+def test_str_typed():
+    """Make sure that EnumapMeta's __str___ method works with typed fields"""
+    class Tools(Enumap):
+        head = auto()
+        horse: float = auto()
+        donkey: int = auto()
+        spatula = auto()
+
+    assert str(Tools) == "Tools(head, horse: float, donkey: int, spatula)"

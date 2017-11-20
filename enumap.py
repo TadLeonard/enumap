@@ -7,7 +7,28 @@ from itertools import zip_longest
 __version__ = "1.3.0"
 
 
-class Enumap(enum.Enum):
+class EnumapMeta(enum.EnumMeta):
+    """An EnumMeta for friendlier, more informative REPL behavior"""
+
+    def _iter_fmt_parts(cls):
+        names = cls.names()
+        types = cls.types()
+        for name in names:
+            type_ = types.get(name)
+            type_info = f": {type_.__name__}" if type_ is not None else ""
+            yield f"{name}{type_info}"
+
+    def __repr__(cls):
+        lines = cls._iter_fmt_parts()
+        indented_lines = ("    " + l for l in lines)
+        return f"{cls.__name__}(\n" + ",\n".join(indented_lines) + "\n)"
+
+    def __str__(cls):
+        parts = cls._iter_fmt_parts()
+        return f"{cls.__name__}(" + ", ".join(parts) + ")"
+
+
+class Enumap(enum.Enum, metaclass=EnumapMeta):
     """An Enum that maps data to its ordered, named members.
     Produces OrderedDicts and namedtuples while ensuring that the
     keys/fields match the names of the Enum members."""
