@@ -251,7 +251,23 @@ def _iter_member_defaults(members):
         # aren't are basically just aliases
 
 
-class SparseEnumap(Enumap):
+class SparseEnumapMeta(EnumapMeta):
+    """An EnumMeta for friendlier, more informative REPL behavior"""
+
+    def _iter_fmt_parts(cls):
+        # None defaults are not explicitly shown for readability
+        names = cls.names()
+        types = cls.types()
+        defaults = cls.defaults()
+        for name in names:
+            type_ = types.get(name)
+            default = defaults.get(name)
+            type_info = f": {type_.__name__}" if type_ is not None else ""
+            default_info = f" = {default!r}" if default is not None else ""
+            yield f"{name}{type_info}{default_info}"
+
+
+class SparseEnumap(Enumap, metaclass=SparseEnumapMeta):
     """A less strict Enumap that provides default values
     for unspecified keys. Invalid keys are still prohibited."""
 
