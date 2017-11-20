@@ -4,7 +4,7 @@ from collections import namedtuple, OrderedDict
 from itertools import zip_longest
 
 
-__version__ = "1.3.0"
+__version__ = "1.5.0"
 
 
 class EnumapMeta(enum.EnumMeta):
