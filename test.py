@@ -349,3 +349,92 @@ def test_copy_from_names():
     a = Enumap("a", "b c d")
     b = Enumap("b", a.names())
     assert a.map(*range(3)) == b.map(*range(3))
+
+
+def test_repr():
+    """Make sure that EnumapMeta's __repr___ method works"""
+    a = Enumap("a", "b c d")
+    assert repr(a) == """a(
+    b,
+    c,
+    d
+)"""
+
+
+def test_repr_typed():
+    """Make sure that EnumapMeta's __repr___ method works with typed fields"""
+    class Tools(Enumap):
+        head = auto()
+        horse: float = auto()
+        donkey: int = auto()
+        spatula = auto()
+
+    assert repr(Tools) == """Tools(
+    head,
+    horse: float,
+    donkey: int,
+    spatula
+)"""
+
+
+def test_str():
+    """Check that EnumapMeta's __str__ method works"""
+    a = Enumap("a", "b c d")
+    assert str(a) == "a(b, c, d)"
+
+
+def test_str_typed():
+    """Make sure that EnumapMeta's __str___ method works with typed fields"""
+    class Tools(Enumap):
+        head = auto()
+        horse: float = auto()
+        donkey: int = auto()
+        spatula = auto()
+
+    assert str(Tools) == "Tools(head, horse: float, donkey: int, spatula)"
+
+
+def test_repr_sparse():
+    """Make sure that SparseEnumapMeta's __repr___ method works"""
+    a = SparseEnumap("a", "b c d")
+    assert repr(a) == """a(
+    b,
+    c,
+    d
+)"""
+
+
+def test_repr_sparse_typed():
+    """Make sure that SparseEnumapMeta's __repr___ method works
+    with typed fields
+    """
+    class Tools(SparseEnumap):
+        head = default("your head")
+        horse: float = default(3.14)
+        donkey: int = auto()
+        spatula = 100  # this isn't a default
+
+    # None defaults are not explicitly shown for readability
+    assert repr(Tools) == """Tools(
+    head = 'your head',
+    horse: float = 3.14,
+    donkey: int,
+    spatula
+)"""
+
+
+def test_str_sparse():
+    """Check that SparseEnumapMeta's __str__ method works"""
+    a = SparseEnumap("a", "b c d")
+    assert str(a) == "a(b, c, d)"
+
+
+def test_str_sparse_typed():
+    """Make sure that EnumapMeta's __str___ method works with typed fields"""
+    class Tools(SparseEnumap):
+        head = default("your head")
+        horse: float = default(3.14)
+        donkey: int = auto()
+        spatula = default(1)
+
+    assert str(Tools) == "Tools(head = 'your head', horse: float = 3.14, donkey: int, spatula = 1)"  # noqa
